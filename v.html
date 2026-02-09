@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Be My Valentine 💖</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: system-ui, Arial;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    }
+
+    .card {
+      background: white;
+      padding: 30px 35px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      max-width: 600px;
+      width: calc(100% - 40px);
+    }
+
+    h1 {
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    h2 {
+      margin-top: 25px;
+    }
+
+    .buttons {
+      position: relative;
+      height: 140px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 12px 22px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      position: absolute;
+    }
+
+    #yes {
+      background: #ff4d6d;
+      color: white;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+    }
+
+    #no {
+      background: #ccc;
+      color: #333;
+      left: 20%;
+      top: 20%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Hey my Ponyo 💖</h1>
+
+    <p>
+      Thank you for leaving the sea and coming into my world.<br>
+      You turned ordinary days into something magical.<br>
+      Every smile of yours feels like sunshine after rain.<br>
+      And somehow, everything feels better when you’re around.
+    </p>
+
+    <h2>Will you be my Valentine? 💘</h2>
+
+    <div class="buttons">
+      <button id="yes">YES 💕</button>
+      <button id="no">NO 😅</button>
+    </div>
+  </div>
+
+  <script>
+    const noBtn = document.getElementById("no");
+    const yesBtn = document.getElementById("yes");
+    const container = document.querySelector(".buttons");
+
+    const messages = [
+      "Nice try 😏",
+      "NO is not an option 😂",
+      "Almost… but nope 💨",
+      "The button said NO to NO 💔",
+      "Plot twist: you meant YES 💕"
+    ];
+
+    let msgIndex = 0;
+
+    function moveNoButton() {
+      const maxX = container.clientWidth - noBtn.offsetWidth;
+      const maxY = container.clientHeight - noBtn.offsetHeight;
+
+      noBtn.style.left = Math.random() * maxX + "px";
+      noBtn.style.top = Math.random() * maxY + "px";
+    }
+
+    function showMessage() {
+      alert(messages[msgIndex % messages.length]);
+      msgIndex++;
+      moveNoButton();
+    }
+
+    ["click", "mouseover", "touchstart"].forEach(evt =>
+      noBtn.addEventListener(evt, showMessage)
+    );
+
+    yesBtn.onclick = () => {
+      document.body.innerHTML = `
+        <div style="
+          height:100vh;
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          font-family:system-ui;
+          background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+          text-align:center;
+          padding:40px;
+        ">
+          <div style="max-width:700px;">
+            <h1 style="font-size:32px; margin-bottom:20px;">
+              💖 Big Congratulations 💖
+            </h1>
+
+            <p style="font-size:20px; line-height:1.6;">
+              You are officially, proudly, and forever<br>
+              the Valentine of <strong>Sourabh Sharma (Sosuke)</strong> 💕
+            </p>
+
+            <p style="font-size:20px; line-height:1.6; margin-top:20px;">
+              I choose you today.<br>
+              I’ll choose you tomorrow.<br>
+              And I will keep choosing you — always.
+            </p>
+
+            <p style="font-size:22px; margin-top:30px;">
+              💘 Happy Valentine’s Day 💘
+            </p>
+          </div>
+        </div>
+      `;
+    };
+  </script>
+
+</body>
+</html>
