@@ -27,10 +27,8 @@
       width: calc(100% - 40px);
     }
 
-    /* ✅ Add this so the image looks good */
     .ponyo-img {
       width: 140px;
-      height: auto;
       border-radius: 16px;
       margin-bottom: 15px;
       box-shadow: 0 6px 15px rgba(0,0,0,0.15);
@@ -39,14 +37,14 @@
       margin-right: auto;
     }
 
-    h1 { margin-bottom: 15px; }
-
     p {
       font-size: 18px;
       line-height: 1.6;
     }
 
-    h2 { margin-top: 25px; }
+    h2 {
+      margin-top: 25px;
+    }
 
     .buttons {
       position: relative;
@@ -64,7 +62,9 @@
       transition: transform 0.15s ease;
     }
 
-    button:active { transform: scale(0.95); }
+    button:active {
+      transform: scale(0.95);
+    }
 
     #yes {
       background: #ff4d6d;
@@ -109,16 +109,6 @@
     const yesBtn = document.getElementById("yes");
     const container = document.querySelector(".buttons");
 
-    const messages = [
-      "Nice try 😏",
-      "NO is not an option 😂",
-      "Almost… but nope 💨",
-      "The button said NO to NO 💔",
-      "Plot twist: you meant YES 💕"
-    ];
-
-    let msgIndex = 0;
-
     function moveNoButton() {
       const maxX = container.clientWidth - noBtn.offsetWidth;
       const maxY = container.clientHeight - noBtn.offsetHeight;
@@ -127,14 +117,9 @@
       noBtn.style.top = Math.random() * maxY + "px";
     }
 
-    function showMessage() {
-      alert(messages[msgIndex % messages.length]);
-      msgIndex++;
-      moveNoButton();
-    }
-
-    ["click", "mouseover", "touchstart"].forEach(evt =>
-      noBtn.addEventListener(evt, showMessage)
+    // Move NO button whenever she tries
+    ["mouseover", "click", "touchstart"].forEach(event =>
+      noBtn.addEventListener(event, moveNoButton)
     );
 
     yesBtn.onclick = () => {
@@ -157,9 +142,7 @@
             border-radius:22px;
             box-shadow:0 12px 35px rgba(0,0,0,0.18);
           ">
-            <h1 style="font-size:32px; margin-bottom:20px;">
-              💖 Big Congratulations 💖
-            </h1>
+            <h1>💖 Big Congratulations 💖</h1>
 
             <p style="font-size:20px; line-height:1.6;">
               You are officially, proudly, and forever<br>
