@@ -15,6 +15,7 @@
       font-family: system-ui, Arial;
       background: linear-gradient(135deg, #ffb7b7, #ffd1dc);
       color: #4a1c2f;
+      overflow: hidden; /* keep confetti nice */
     }
 
     .card {
@@ -25,6 +26,10 @@
       box-shadow: 0 12px 35px rgba(0,0,0,0.18);
       max-width: 600px;
       width: calc(100% - 40px);
+      cursor: pointer; /* so she knows it's clickable */
+      user-select: none;
+      position: relative;
+      z-index: 2;
     }
 
     .ponyo-img {
@@ -35,11 +40,17 @@
       display: block;
       margin-left: auto;
       margin-right: auto;
+      pointer-events: none;
     }
 
     p {
       font-size: 18px;
       line-height: 1.6;
+      pointer-events: none; /* click goes to card */
+    }
+
+    h1, h2 {
+      pointer-events: none; /* click goes to card */
     }
 
     h2 {
@@ -48,7 +59,7 @@
 
     .buttons {
       position: relative;
-      height: 140px;
+      height: 160px;
       margin-top: 20px;
     }
 
@@ -60,6 +71,7 @@
       cursor: pointer;
       position: absolute;
       transition: transform 0.15s ease;
+      touch-action: manipulation;
     }
 
     button:active {
@@ -72,19 +84,65 @@
       left: 50%;
       transform: translateX(-50%);
       bottom: 0;
+      z-index: 3;
     }
 
+    /* NO is NOT beside YES */
     #no {
       background: #d3d3d3;
       color: #333;
-      left: 20%;
-      top: 20%;
+      left: 10%;
+      top: 10%;
+      z-index: 3;
+    }
+
+    /* Confetti overlay */
+    .confetti-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
+
+    .confetti {
+      position: absolute;
+      top: -10px;
+      width: 10px;
+      height: 14px;
+      opacity: 0.95;
+      border-radius: 2px;
+      animation: fall linear forwards;
+      transform: rotate(0deg);
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 1;
+      }
+    }
+
+    /* tiny toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(0,0,0,0.06);
+      padding: 10px 14px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      z-index: 10000;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
+  <div class="card" id="messageCard" title="Tap/click me 🎉">
     <img src="ponyo.jpg" alt="Ponyo" class="ponyo-img" />
 
     <h1>Hey my Ponyo 💖</h1>
@@ -108,19 +166,93 @@
     const noBtn = document.getElementById("no");
     const yesBtn = document.getElementById("yes");
     const container = document.querySelector(".buttons");
+    const messageCard = document.getElementById("messageCard");
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
 
     function moveNoButton() {
       const maxX = container.clientWidth - noBtn.offsetWidth;
       const maxY = container.clientHeight - noBtn.offsetHeight;
 
-      noBtn.style.left = Math.random() * maxX + "px";
-      noBtn.style.top = Math.random() * maxY + "px";
+      // random position inside the container
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
     }
 
-    // Move NO button whenever she tries
-    ["mouseover", "click", "touchstart"].forEach(event =>
-      noBtn.addEventListener(event, moveNoButton)
-    );
+    // Make NO run away when she tries to click it (or hover/touch)
+    ["pointerdown", "mouseover", "touchstart"].forEach(evt => {
+      noBtn.addEventListener(evt, (e) => {
+        e.preventDefault();
+        moveNoButton();
+      }, { passive: false });
+    });
+
+    // Optional: also move if focus happens (keyboard)
+    noBtn.addEventListener("focus", moveNoButton);
+
+    // Confetti party blast
+    function partyBlast({
+      pieces = 80,
+      durationMs = 1600
+    } = {}) {
+      const layer = document.createElement("div");
+      layer.className = "confetti-layer";
+      document.body.appendChild(layer);
+
+      const emojis = ["🎉", "✨", "💖", "🎊", "💘"];
+      const colors = ["#ff4d6d", "#ffd166", "#06d6a0", "#4dabf7", "#b197fc", "#f783ac"];
+
+      for (let i = 0; i < pieces; i++) {
+        const el = document.createElement("div");
+        el.className = "confetti";
+
+        const left = Math.random() * 100;
+        const size = 6 + Math.random() * 10;
+        const fallTime = 900 + Math.random() * 900;
+
+        // 25% emoji confetti
+        const useEmoji = Math.random() < 0.25;
+        if (useEmoji) {
+          el.style.width = "auto";
+          el.style.height = "auto";
+          el.style.fontSize = (12 + Math.random() * 18) + "px";
+          el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          el.style.background = "transparent";
+        } else {
+          el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          el.style.width = size + "px";
+          el.style.height = (size + 4) + "px";
+        }
+
+        el.style.left = left + "vw";
+        el.style.animationDuration = fallTime + "ms";
+        el.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+        layer.appendChild(el);
+      }
+
+      // remove after duration
+      setTimeout(() => layer.remove(), durationMs);
+    }
+
+    function showToast(text) {
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.textContent = text;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 1400);
+    }
+
+    // Clicking the message card triggers party blast
+    messageCard.addEventListener("click", () => {
+      partyBlast({ pieces: 90 });
+      showToast("🎉 You tapped the message! 💖");
+    });
 
     yesBtn.onclick = () => {
       document.body.innerHTML = `
@@ -141,7 +273,7 @@
             padding:35px;
             border-radius:22px;
             box-shadow:0 12px 35px rgba(0,0,0,0.18);
-          ">
+          " id="finalCard">
             <h1>💖 Big Congratulations 💖</h1>
 
             <p style="font-size:20px; line-height:1.6;">
@@ -158,10 +290,102 @@
             <p style="font-size:22px; margin-top:30px;">
               💘 Happy Valentine’s Day 💘
             </p>
+
+            <p style="opacity:.8; margin-top:18px; font-size:14px;">
+              (Tap anywhere for one more 🎉)
+            </p>
           </div>
         </div>
       `;
+
+      // blast once on load
+      (function partyBlastFinal(){
+        const layer = document.createElement("div");
+        layer.style.position = "fixed";
+        layer.style.inset = "0";
+        layer.style.pointerEvents = "none";
+        layer.style.overflow = "hidden";
+        layer.style.zIndex = "9999";
+        document.body.appendChild(layer);
+
+        const emojis = ["🎉", "✨", "💖", "🎊", "💘"];
+        const colors = ["#ff4d6d", "#ffd166", "#06d6a0", "#4dabf7", "#b197fc", "#f783ac"];
+
+        for (let i = 0; i < 110; i++) {
+          const el = document.createElement("div");
+          el.style.position = "absolute";
+          el.style.top = "-10px";
+          el.style.left = (Math.random() * 100) + "vw";
+          el.style.opacity = "0.95";
+          el.style.borderRadius = "2px";
+
+          const fallTime = 900 + Math.random() * 900;
+          el.style.animation = `fall ${fallTime}ms linear forwards`;
+
+          const useEmoji = Math.random() < 0.28;
+          if (useEmoji) {
+            el.style.background = "transparent";
+            el.style.fontSize = (12 + Math.random() * 18) + "px";
+            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          } else {
+            const size = 6 + Math.random() * 10;
+            el.style.width = size + "px";
+            el.style.height = (size + 4) + "px";
+            el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          }
+
+          layer.appendChild(el);
+        }
+
+        setTimeout(() => layer.remove(), 1700);
+      })();
+
+      // tap anywhere for another blast
+      document.body.addEventListener("click", () => {
+        // quick lightweight burst
+        const evt = new Event("extraBlast");
+        document.dispatchEvent(evt);
+      });
+
+      document.addEventListener("extraBlast", () => {
+        // tiny burst (no heavy loops)
+        const layer = document.createElement("div");
+        layer.style.position = "fixed";
+        layer.style.inset = "0";
+        layer.style.pointerEvents = "none";
+        layer.style.overflow = "hidden";
+        layer.style.zIndex = "9999";
+        document.body.appendChild(layer);
+
+        for (let i = 0; i < 60; i++) {
+          const el = document.createElement("div");
+          el.style.position = "absolute";
+          el.style.top = "-10px";
+          el.style.left = (Math.random() * 100) + "vw";
+          el.style.width = (6 + Math.random() * 10) + "px";
+          el.style.height = (10 + Math.random() * 12) + "px";
+          el.style.borderRadius = "2px";
+          el.style.background = ["#ff4d6d","#ffd166","#06d6a0","#4dabf7","#b197fc","#f783ac"][Math.floor(Math.random()*6)];
+          el.style.animation = `fall ${900 + Math.random()*900}ms linear forwards`;
+          layer.appendChild(el);
+        }
+        setTimeout(() => layer.remove(), 1500);
+      });
     };
+
+    // Place NO away from YES on load (so it's not near it)
+    // Keep it roughly top-left-ish but not fixed
+    function placeNoAwayFromYes() {
+      // put NO somewhere in upper area (away from YES at bottom center)
+      const maxX = container.clientWidth - noBtn.offsetWidth;
+      const maxY = container.clientHeight - noBtn.offsetHeight;
+      const x = Math.random() * (maxX * 0.5); // left half
+      const y = Math.random() * (maxY * 0.5); // top half
+      noBtn.style.left = clamp(x, 0, maxX) + "px";
+      noBtn.style.top = clamp(y, 0, maxY) + "px";
+    }
+    window.addEventListener("load", placeNoAwayFromYes);
+    window.addEventListener("resize", placeNoAwayFromYes);
   </script>
 
 </body>
