@@ -170,3 +170,451 @@
     .burst-heart{
       position: fixed;
       left: 0; top: 0;
+      will-change: transform, opacity;
+      pointer-events:none;
+      z-index: 10000;
+      font-size: 18px;
+      opacity: 1;
+      transform: translate(-999px,-999px);
+      animation: burst 900ms ease-out forwards;
+      text-shadow: 0 8px 18px rgba(0,0,0,.12);
+    }
+    @keyframes burst{
+      to{
+        transform: translate(var(--tx), var(--ty)) scale(0.9);
+        opacity: 0;
+      }
+    }
+
+    /* countdown overlay */
+    .countdown{
+      position:absolute;
+      inset: 0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background: rgba(255,255,255,.55);
+      backdrop-filter: blur(6px);
+      border-radius: 22px;
+      font-size: 54px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      z-index: 5;
+    }
+
+    /* toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(0,0,0,0.06);
+      padding: 10px 14px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      z-index: 10000;
+      font-size: 14px;
+      max-width: min(520px, calc(100% - 30px));
+      text-align:center;
+    }
+
+    /* final “Today / Tomorrow / Always” animation */
+    .promise span{
+      display:inline-block;
+      opacity:0;
+      transform: translateY(8px);
+      animation: riseIn 900ms ease forwards;
+    }
+    .promise span:nth-child(1){ animation-delay: 0ms; }
+    .promise span:nth-child(2){ animation-delay: 600ms; }
+    .promise span:nth-child(3){ animation-delay: 1200ms; }
+    @keyframes riseIn{
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    /* shooting star */
+    .shooting-star{
+      position: fixed;
+      width: 180px;
+      height: 2px;
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 0 12px rgba(255,255,255,.9);
+      opacity: 0.9;
+      transform: rotate(-25deg);
+      z-index: 9000;
+      pointer-events:none;
+      animation: shoot 900ms ease-out forwards;
+    }
+    @keyframes shoot{
+      to{
+        transform: translate(380px, 220px) rotate(-25deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="heart-float-layer" id="heartLayer"></div>
+
+  <div class="card" id="messageCard" title="Tap/click the message 🎉">
+    <img src="ponyo.jpg" alt="Ponyo" class="ponyo-img" />
+
+    <h1 id="titleLine">Hey my Ponyo 💖</h1>
+
+    <p id="typewriter"></p>
+    <div class="hint">(Tap the message for a surprise ✨)</div>
+
+    <h2>Will you be my Valentine? 💘</h2>
+
+    <div class="buttons" id="btnContainer">
+      <button id="yes">YES 💕</button>
+      <button id="no">NO 😅</button>
+    </div>
+  </div>
+
+  <script>
+    /**********************
+     * Customize here
+     **********************/
+    const herName = "My Love"; // <-- put her name here if you want (e.g. "Ayesha")
+    const titleText = `Hey my Ponyo${herName ? ", " + herName : ""} 💖`;
+
+    const loveLetterLines = [
+      "Thank you for leaving the sea and coming into my world.",
+      "You turned ordinary days into something magical.",
+      "Every smile of yours feels like sunshine after rain.",
+      "And somehow, everything feels better when you’re around."
+    ];
+
+    /**********************
+     * Elements
+     **********************/
+    const noBtn = document.getElementById("no");
+    const yesBtn = document.getElementById("yes");
+    const container = document.getElementById("btnContainer");
+    const messageCard = document.getElementById("messageCard");
+    const typewriterEl = document.getElementById("typewriter");
+    const titleLine = document.getElementById("titleLine");
+    const heartLayer = document.getElementById("heartLayer");
+
+    titleLine.textContent = titleText;
+
+    /**********************
+     * Typewriter effect
+     **********************/
+    function typeWriter(lines, speed = 22, linePause = 420){
+      typewriterEl.innerHTML = "";
+      const full = lines.map(l => l.replace(/</g,"&lt;").replace(/>/g,"&gt;"));
+      let li = 0, ci = 0;
+
+      function tick(){
+        if(li >= full.length) return;
+
+        const current = full[li];
+        if(ci < current.length){
+          typewriterEl.innerHTML =
+            full.slice(0, li).map(l => l + "<br>").join("") +
+            current.slice(0, ci + 1) +
+            "<span style='opacity:.6'>|</span>";
+          ci++;
+          setTimeout(tick, speed);
+        } else {
+          // line done
+          typewriterEl.innerHTML =
+            full.slice(0, li + 1).map(l => l + "<br>").join("");
+          li++;
+          ci = 0;
+          setTimeout(tick, linePause);
+        }
+      }
+      tick();
+    }
+    typeWriter(loveLetterLines);
+
+    /**********************
+     * Floating hearts background
+     **********************/
+    const floatHearts = ["💖","💕","💘","💗","💞","✨"];
+    function spawnFloatHeart(){
+      const el = document.createElement("div");
+      el.className = "float-heart";
+      el.textContent = floatHearts[Math.floor(Math.random()*floatHearts.length)];
+      el.style.left = (Math.random()*100) + "vw";
+      el.style.fontSize = (14 + Math.random()*18) + "px";
+      el.style.animationDuration = (4500 + Math.random()*4500) + "ms";
+      el.style.opacity = (0.35 + Math.random()*0.35).toFixed(2);
+      heartLayer.appendChild(el);
+      setTimeout(()=>el.remove(), 10000);
+    }
+    setInterval(spawnFloatHeart, 420);
+    for(let i=0;i<10;i++) setTimeout(spawnFloatHeart, i*150);
+
+    /**********************
+     * Confetti party
+     **********************/
+    function partyBlast({ pieces = 90, durationMs = 1600 } = {}) {
+      const layer = document.createElement("div");
+      layer.className = "confetti-layer";
+      document.body.appendChild(layer);
+
+      const emojis = ["🎉", "✨", "💖", "🎊", "💘"];
+      const colors = ["#ff4d6d", "#ffd166", "#06d6a0", "#4dabf7", "#b197fc", "#f783ac"];
+
+      for (let i = 0; i < pieces; i++) {
+        const el = document.createElement("div");
+        el.className = "confetti";
+
+        const left = Math.random() * 100;
+        const fallTime = 900 + Math.random() * 900;
+
+        const useEmoji = Math.random() < 0.28;
+        if (useEmoji) {
+          el.style.width = "auto";
+          el.style.height = "auto";
+          el.style.fontSize = (12 + Math.random() * 18) + "px";
+          el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          el.style.background = "transparent";
+        } else {
+          el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          const size = 6 + Math.random() * 10;
+          el.style.width = size + "px";
+          el.style.height = (size + 4) + "px";
+        }
+
+        el.style.left = left + "vw";
+        el.style.animationDuration = fallTime + "ms";
+        el.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+        layer.appendChild(el);
+      }
+
+      setTimeout(() => layer.remove(), durationMs);
+    }
+
+    function showToast(text) {
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.textContent = text;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 1600);
+    }
+
+    /**********************
+     * Heart burst (romantic explosion)
+     **********************/
+    function heartBurstFromRect(rect, count = 18){
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+
+      for(let i=0;i<count;i++){
+        const h = document.createElement("div");
+        h.className = "burst-heart";
+        h.textContent = (Math.random()<0.25) ? "✨" : "💖";
+
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 40 + Math.random() * 110;
+        const tx = cx + Math.cos(angle)*radius;
+        const ty = cy + Math.sin(angle)*radius;
+
+        h.style.setProperty("--tx", tx + "px");
+        h.style.setProperty("--ty", ty + "px");
+        h.style.fontSize = (16 + Math.random()*16) + "px";
+        h.style.opacity = (0.85 + Math.random()*0.15).toFixed(2);
+
+        // Start at center
+        h.style.transform = `translate(${cx}px, ${cy}px)`;
+        document.body.appendChild(h);
+        setTimeout(()=>h.remove(), 980);
+      }
+    }
+
+    /**********************
+     * Shooting stars (final moment)
+     **********************/
+    function shootingStars(times = 3){
+      for(let i=0;i<times;i++){
+        setTimeout(()=>{
+          const s = document.createElement("div");
+          s.className = "shooting-star";
+          s.style.left = (-200 + Math.random()*200) + "px";
+          s.style.top  = (Math.random()*120) + "px";
+          document.body.appendChild(s);
+          setTimeout(()=>s.remove(), 1000);
+        }, i*220);
+      }
+    }
+
+    /**********************
+     * NO button runs away + YES grows
+     **********************/
+    let noAttempts = 0;
+    let yesScale = 1;
+
+    function moveNoButton() {
+      const maxX = container.clientWidth - noBtn.offsetWidth;
+      const maxY = container.clientHeight - noBtn.offsetHeight;
+
+      // switch to absolute ONLY when it escapes
+      noBtn.style.position = "absolute";
+      noBtn.style.left = (Math.random() * Math.max(1, maxX)) + "px";
+      noBtn.style.top  = (Math.random() * Math.max(1, maxY)) + "px";
+
+      // YES grows a little each NO attempt
+      noAttempts++;
+      yesScale = Math.min(1.28, 1 + noAttempts * 0.04);
+      yesBtn.style.transform = `scale(${yesScale})`;
+
+      // make YES glow warmer
+      yesBtn.style.filter = `brightness(${Math.min(1.18, 1 + noAttempts*0.03)})`;
+
+      // tiny romantic burst near YES
+      heartBurstFromRect(yesBtn.getBoundingClientRect(), 8);
+    }
+
+    ["pointerdown", "mouseover", "touchstart"].forEach(evt => {
+      noBtn.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        moveNoButton();
+      }, { passive: false });
+    });
+
+    // Keep NO in line until she tries
+    function resetNoInline(){
+      noBtn.style.position = "relative";
+      noBtn.style.left = "";
+      noBtn.style.top = "";
+    }
+    window.addEventListener("load", resetNoInline);
+
+    /**********************
+     * Clicking the message card = party + easter egg
+     **********************/
+    let cardClicks = 0;
+
+    messageCard.addEventListener("click", () => {
+      cardClicks++;
+      partyBlast({ pieces: 90 });
+      showToast("🎉 Your tap just made the page happier 💖");
+
+      if(cardClicks === 5){
+        showToast("Okay okay… I get it 😌 You’re adorable when you tap like that 💕");
+      }
+      if(cardClicks === 8){
+        showToast("Secret message: I’m already yours 💘");
+      }
+    });
+
+    // Prevent card-click when clicking buttons
+    [yesBtn, noBtn].forEach(btn => btn.addEventListener("click", (e)=>e.stopPropagation()));
+
+    /**********************
+     * YES click: countdown -> final screen -> romance
+     **********************/
+    yesBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      // burst from YES immediately
+      heartBurstFromRect(yesBtn.getBoundingClientRect(), 22);
+
+      // disable buttons
+      yesBtn.disabled = true;
+      noBtn.disabled = true;
+      yesBtn.style.cursor = "default";
+      noBtn.style.cursor = "default";
+
+      // countdown overlay
+      const overlay = document.createElement("div");
+      overlay.className = "countdown";
+      overlay.textContent = "3";
+      messageCard.appendChild(overlay);
+
+      let n = 3;
+      const timer = setInterval(()=>{
+        n--;
+        overlay.textContent = n > 0 ? String(n) : "💖";
+        if(n <= 0){
+          clearInterval(timer);
+          setTimeout(showFinal, 380);
+        }
+      }, 700);
+
+      function showFinal(){
+        document.body.innerHTML = `
+          <div style="
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            font-family:system-ui;
+            text-align:center;
+            padding:40px;
+            color: ${getComputedStyle(document.documentElement).getPropertyValue('--text')};
+          ">
+            <div style="
+              max-width:760px;
+              background: linear-gradient(135deg, ${getComputedStyle(document.documentElement).getPropertyValue('--card1')}, ${getComputedStyle(document.documentElement).getPropertyValue('--card2')});
+              padding:38px;
+              border-radius:22px;
+              box-shadow:0 12px 35px rgba(0,0,0,0.18);
+              position: relative;
+            " id="finalCard">
+              <h1 style="margin:0 0 10px;">💖 Big Congratulations 💖</h1>
+
+              <p style="font-size:20px; line-height:1.6; margin: 12px 0;">
+                You are officially, proudly, and forever<br>
+                the Valentine of <strong>Sourabh Sharma (Sosuke)</strong> 💕
+              </p>
+
+              <p class="promise" style="font-size:20px; line-height:1.7; margin-top:18px;">
+                <span>I choose you today.</span><br>
+                <span>I’ll choose you tomorrow.</span><br>
+                <span>And I will keep choosing you — always.</span>
+              </p>
+
+              <p style="font-size:22px; margin-top:26px;">
+                💘 Happy Valentine’s Day, <strong>${herName || "my love"}</strong> 💘
+              </p>
+
+              <p style="opacity:.8; margin-top:16px; font-size:14px;">
+                (Tap anywhere for more magic ✨)
+              </p>
+            </div>
+          </div>
+        `;
+
+        // restore keyframes (since body replaced)
+        const style = document.createElement("style");
+        style.textContent = `
+          @keyframes fall{ to{ transform: translateY(110vh) rotate(720deg); opacity: 1; } }
+          .promise span{ display:inline-block; opacity:0; transform: translateY(8px); animation: riseIn 900ms ease forwards; }
+          .promise span:nth-child(1){ animation-delay: 0ms; }
+          .promise span:nth-child(2){ animation-delay: 600ms; }
+          .promise span:nth-child(3){ animation-delay: 1200ms; }
+          @keyframes riseIn{ to{ opacity:1; transform: translateY(0); } }
+        `;
+        document.head.appendChild(style);
+
+        // big romance moment
+        partyBlast({ pieces: 140, durationMs: 1800 });
+        shootingStars(4);
+
+        // click anywhere = more bursts
+        document.body.addEventListener("click", () => {
+          partyBlast({ pieces: 80, durationMs: 1400 });
+          shootingStars(2);
+
+          const finalCard = document.getElementById("finalCard");
+          if(finalCard){
+            const r = finalCard.getBoundingClientRect();
+            heartBurstFromRect(r, 26);
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
