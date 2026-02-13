@@ -6,358 +6,167 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    body {
-      height: 100vh;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: system-ui, Arial;
-      background: linear-gradient(135deg, #ffb7b7, #ffd1dc);
-      color: #4a1c2f;
-      overflow: hidden;
+    :root{
+      --bg1:#ffb7b7;
+      --bg2:#ffd1dc;
+      --card1:#fff1f2;
+      --card2:#ffe4e6;
+      --text:#4a1c2f;
+      --yes:#ff4d6d;
     }
 
-    .card {
-      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+    body{
+      height:100vh;
+      margin:0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-family:system-ui, Arial;
+      color:var(--text);
+      overflow:hidden;
+
+      /* dreamy sky + stars */
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,.35) 0 1px, transparent 2px),
+        radial-gradient(circle at 70% 20%, rgba(255,255,255,.28) 0 1px, transparent 2px),
+        radial-gradient(circle at 40% 75%, rgba(255,255,255,.22) 0 1px, transparent 2px),
+        radial-gradient(circle at 85% 65%, rgba(255,255,255,.25) 0 1px, transparent 2px),
+        radial-gradient(circle at 10% 80%, rgba(255,255,255,.2) 0 1px, transparent 2px),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      background-size: 220px 220px, 260px 260px, 240px 240px, 300px 300px, 280px 280px, cover;
+      animation: twinkle 3.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle{
+      from{ filter: brightness(1); }
+      to{ filter: brightness(1.04); }
+    }
+
+    .card{
+      background: linear-gradient(135deg, var(--card1), var(--card2));
       padding: 30px 35px;
       border-radius: 22px;
       text-align: center;
       box-shadow: 0 12px 35px rgba(0,0,0,0.18);
-      max-width: 600px;
+      max-width: 640px;
       width: calc(100% - 40px);
-      cursor: pointer;            /* click message = party blast */
+      cursor: pointer; /* click message = party blast */
       user-select: none;
       position: relative;
       z-index: 2;
     }
 
-    .ponyo-img {
+    .ponyo-img{
       width: 140px;
       border-radius: 16px;
       margin-bottom: 15px;
       box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-      pointer-events: none;
+      display:block;
+      margin-left:auto;
+      margin-right:auto;
+      pointer-events:none;
     }
 
-    p {
-      font-size: 18px;
-      line-height: 1.6;
-      pointer-events: none;
+    h1,h2{ pointer-events:none; }
+    h2{ margin-top:25px; }
+
+    p{
+      font-size:18px;
+      line-height:1.6;
+      pointer-events:none;
+      min-height: 120px; /* helps typewriter not jump */
     }
 
-    h1, h2 {
-      pointer-events: none;
+    .hint{
+      font-size: 13px;
+      opacity: .75;
+      margin-top: 10px;
+      pointer-events:none;
     }
 
-    h2 {
-      margin-top: 25px;
-    }
-
-    /* Buttons in same line */
-    .buttons {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;             /* space between YES and NO */
-      margin-top: 20px;
-      position: relative;    /* needed for NO escaping area */
+    /* buttons in same line */
+    .buttons{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:20px;
+      margin-top:20px;
+      position:relative; /* NO escapes inside here */
       height: 90px;
     }
 
-    button {
+    button{
       padding: 12px 22px;
       font-size: 18px;
       border-radius: 14px;
-      border: none;
-      cursor: pointer;
-      transition: transform 0.15s ease;
-      position: relative; /* normal layout */
+      border:none;
+      cursor:pointer;
+      transition: transform .15s ease, box-shadow .25s ease, filter .25s ease;
+      position: relative;
       touch-action: manipulation;
     }
 
-    button:active {
-      transform: scale(0.95);
+    button:active{ transform: scale(.95); }
+
+    #yes{
+      background: var(--yes);
+      color:white;
+      z-index:3;
+      box-shadow: 0 10px 25px rgba(255,77,109,.35);
     }
 
-    #yes {
-      background: #ff4d6d;
-      color: white;
-      z-index: 3;
+    #no{
+      background:#d3d3d3;
+      color:#333;
+      z-index:3;
     }
 
-    #no {
-      background: #d3d3d3;
-      color: #333;
-      z-index: 3;
-    }
-
-    /* Confetti */
-    .confetti-layer {
+    /* floating hearts background */
+    .heart-float-layer{
       position: fixed;
       inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 9999;
+      pointer-events:none;
+      overflow:hidden;
+      z-index: 1;
+    }
+    .float-heart{
+      position:absolute;
+      bottom:-20px;
+      font-size: 16px;
+      opacity: .55;
+      animation: floatUp linear forwards;
+      filter: blur(.1px);
+    }
+    @keyframes floatUp{
+      to{
+        transform: translateY(-110vh) translateX(30px) rotate(25deg);
+        opacity: 0;
+      }
     }
 
-    .confetti {
-      position: absolute;
-      top: -10px;
-      width: 10px;
-      height: 14px;
-      opacity: 0.95;
-      border-radius: 2px;
+    /* confetti layer */
+    .confetti-layer{
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index: 9999;
+    }
+    .confetti{
+      position:absolute;
+      top:-10px;
+      width:10px;
+      height:14px;
+      opacity:.95;
+      border-radius:2px;
       animation: fall linear forwards;
       transform: rotate(0deg);
     }
-
-    @keyframes fall {
-      to {
-        transform: translateY(110vh) rotate(720deg);
-        opacity: 1;
-      }
+    @keyframes fall{
+      to{ transform: translateY(110vh) rotate(720deg); opacity: 1; }
     }
 
-    .toast {
+    /* heart burst particles */
+    .burst-heart{
       position: fixed;
-      left: 50%;
-      bottom: 22px;
-      transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(0,0,0,0.06);
-      padding: 10px 14px;
-      border-radius: 14px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-      z-index: 10000;
-      font-size: 14px;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="card" id="messageCard" title="Tap/click me 🎉">
-    <img src="ponyo.jpg" alt="Ponyo" class="ponyo-img" />
-
-    <h1>Hey my Ponyo 💖</h1>
-
-    <p>
-      Thank you for leaving the sea and coming into my world.<br>
-      You turned ordinary days into something magical.<br>
-      Every smile of yours feels like sunshine after rain.<br>
-      And somehow, everything feels better when you’re around.
-    </p>
-
-    <h2>Will you be my Valentine? 💘</h2>
-
-    <div class="buttons" id="btnContainer">
-      <button id="yes">YES 💕</button>
-      <button id="no">NO 😅</button>
-    </div>
-  </div>
-
-  <script>
-    const noBtn = document.getElementById("no");
-    const yesBtn = document.getElementById("yes");
-    const container = document.getElementById("btnContainer");
-    const messageCard = document.getElementById("messageCard");
-
-    // Confetti party blast
-    function partyBlast({ pieces = 90, durationMs = 1600 } = {}) {
-      const layer = document.createElement("div");
-      layer.className = "confetti-layer";
-      document.body.appendChild(layer);
-
-      const emojis = ["🎉", "✨", "💖", "🎊", "💘"];
-      const colors = ["#ff4d6d", "#ffd166", "#06d6a0", "#4dabf7", "#b197fc", "#f783ac"];
-
-      for (let i = 0; i < pieces; i++) {
-        const el = document.createElement("div");
-        el.className = "confetti";
-
-        const left = Math.random() * 100;
-        const fallTime = 900 + Math.random() * 900;
-
-        const useEmoji = Math.random() < 0.28;
-        if (useEmoji) {
-          el.style.width = "auto";
-          el.style.height = "auto";
-          el.style.fontSize = (12 + Math.random() * 18) + "px";
-          el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-          el.style.background = "transparent";
-        } else {
-          el.style.background = colors[Math.floor(Math.random() * colors.length)];
-          const size = 6 + Math.random() * 10;
-          el.style.width = size + "px";
-          el.style.height = (size + 4) + "px";
-        }
-
-        el.style.left = left + "vw";
-        el.style.animationDuration = fallTime + "ms";
-        el.style.transform = `rotate(${Math.random() * 360}deg)`;
-
-        layer.appendChild(el);
-      }
-
-      setTimeout(() => layer.remove(), durationMs);
-    }
-
-    function showToast(text) {
-      const t = document.createElement("div");
-      t.className = "toast";
-      t.textContent = text;
-      document.body.appendChild(t);
-      setTimeout(() => t.remove(), 1400);
-    }
-
-    // Clicking the message/card triggers party blast
-    messageCard.addEventListener("click", () => {
-      partyBlast({ pieces: 100 });
-      showToast("🎉 You tapped the message! 💖");
-    });
-
-    // NO button runs away
-    function moveNoButton() {
-      const maxX = container.clientWidth - noBtn.offsetWidth;
-      const maxY = container.clientHeight - noBtn.offsetHeight;
-
-      // Switch to absolute ONLY when it escapes
-      noBtn.style.position = "absolute";
-      noBtn.style.left = Math.random() * maxX + "px";
-      noBtn.style.top = Math.random() * maxY + "px";
-    }
-
-    // Reset NO back to the line when page loads
-    function resetNoButtonInline() {
-      noBtn.style.position = "relative";
-      noBtn.style.left = "";
-      noBtn.style.top = "";
-    }
-
-    window.addEventListener("load", resetNoButtonInline);
-
-    // Run away when she tries
-    ["pointerdown", "mouseover", "touchstart"].forEach(evt => {
-      noBtn.addEventListener(evt, (e) => {
-        e.preventDefault();
-        moveNoButton();
-      }, { passive: false });
-    });
-
-    // YES click: show final message + confetti
-    yesBtn.onclick = () => {
-      document.body.innerHTML = `
-        <div style="
-          height:100vh;
-          display:flex;
-          justify-content:center;
-          align-items:center;
-          font-family:system-ui;
-          background:linear-gradient(135deg,#ffb7b7,#ffd1dc);
-          text-align:center;
-          padding:40px;
-          color:#4a1c2f;
-        ">
-          <div style="
-            max-width:700px;
-            background:linear-gradient(135deg,#fff1f2,#ffe4e6);
-            padding:35px;
-            border-radius:22px;
-            box-shadow:0 12px 35px rgba(0,0,0,0.18);
-          " id="finalCard">
-            <h1>💖 Big Congratulations 💖</h1>
-
-            <p style="font-size:20px; line-height:1.6;">
-              You are officially, proudly, and forever<br>
-              the Valentine of <strong>Sourabh Sharma (Sosuke)</strong> 💕
-            </p>
-
-            <p style="font-size:20px; line-height:1.6; margin-top:20px;">
-              I choose you today.<br>
-              I’ll choose you tomorrow.<br>
-              And I will keep choosing you — always.
-            </p>
-
-            <p style="font-size:22px; margin-top:30px;">
-              💘 Happy Valentine’s Day 💘
-            </p>
-
-            <p style="opacity:.8; margin-top:18px; font-size:14px;">
-              (Tap anywhere for 🎉)
-            </p>
-          </div>
-        </div>
-      `;
-
-      // Add keyframes again (since body replaced)
-      const style = document.createElement("style");
-      style.textContent = `
-        @keyframes fall {
-          to { transform: translateY(110vh) rotate(720deg); opacity: 1; }
-        }
-      `;
-      document.head.appendChild(style);
-
-      // Blast on load
-      (function blastNow(){
-        const layer = document.createElement("div");
-        layer.style.position = "fixed";
-        layer.style.inset = "0";
-        layer.style.pointerEvents = "none";
-        layer.style.overflow = "hidden";
-        layer.style.zIndex = "9999";
-        document.body.appendChild(layer);
-
-        const colors = ["#ff4d6d", "#ffd166", "#06d6a0", "#4dabf7", "#b197fc", "#f783ac"];
-
-        for (let i = 0; i < 120; i++) {
-          const el = document.createElement("div");
-          el.style.position = "absolute";
-          el.style.top = "-10px";
-          el.style.left = (Math.random() * 100) + "vw";
-          el.style.width = (6 + Math.random() * 10) + "px";
-          el.style.height = (10 + Math.random() * 12) + "px";
-          el.style.borderRadius = "2px";
-          el.style.opacity = "0.95";
-          el.style.background = colors[Math.floor(Math.random() * colors.length)];
-          el.style.animation = `fall ${900 + Math.random() * 900}ms linear forwards`;
-          layer.appendChild(el);
-        }
-        setTimeout(() => layer.remove(), 1700);
-      })();
-
-      // Tap anywhere for another blast
-      document.body.addEventListener("click", () => {
-        const layer = document.createElement("div");
-        layer.style.position = "fixed";
-        layer.style.inset = "0";
-        layer.style.pointerEvents = "none";
-        layer.style.overflow = "hidden";
-        layer.style.zIndex = "9999";
-        document.body.appendChild(layer);
-
-        const colors = ["#ff4d6d", "#ffd166", "#06d6a0", "#4dabf7", "#b197fc", "#f783ac"];
-
-        for (let i = 0; i < 70; i++) {
-          const el = document.createElement("div");
-          el.style.position = "absolute";
-          el.style.top = "-10px";
-          el.style.left = (Math.random() * 100) + "vw";
-          el.style.width = (6 + Math.random() * 10) + "px";
-          el.style.height = (10 + Math.random() * 12) + "px";
-          el.style.borderRadius = "2px";
-          el.style.opacity = "0.95";
-          el.style.background = colors[Math.floor(Math.random() * colors.length)];
-          el.style.animation = `fall ${900 + Math.random() * 900}ms linear forwards`;
-          layer.appendChild(el);
-        }
-        setTimeout(() => layer.remove(), 1500);
-      });
-    };
-  </script>
-</body>
-</html>
+      left: 0; top: 0;
