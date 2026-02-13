@@ -15,7 +15,7 @@
       font-family: system-ui, Arial;
       background: linear-gradient(135deg, #ffb7b7, #ffd1dc);
       color: #4a1c2f;
-      overflow: hidden; /* keep confetti nice */
+      overflow: hidden;
     }
 
     .card {
@@ -26,7 +26,7 @@
       box-shadow: 0 12px 35px rgba(0,0,0,0.18);
       max-width: 600px;
       width: calc(100% - 40px);
-      cursor: pointer; /* so she knows it's clickable */
+      cursor: pointer;            /* click message = party blast */
       user-select: none;
       position: relative;
       z-index: 2;
@@ -46,21 +46,26 @@
     p {
       font-size: 18px;
       line-height: 1.6;
-      pointer-events: none; /* click goes to card */
+      pointer-events: none;
     }
 
     h1, h2 {
-      pointer-events: none; /* click goes to card */
+      pointer-events: none;
     }
 
     h2 {
       margin-top: 25px;
     }
 
+    /* Buttons in same line */
     .buttons {
-      position: relative;
-      height: 160px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;             /* space between YES and NO */
       margin-top: 20px;
+      position: relative;    /* needed for NO escaping area */
+      height: 90px;
     }
 
     button {
@@ -69,8 +74,8 @@
       border-radius: 14px;
       border: none;
       cursor: pointer;
-      position: absolute;
       transition: transform 0.15s ease;
+      position: relative; /* normal layout */
       touch-action: manipulation;
     }
 
@@ -81,22 +86,16 @@
     #yes {
       background: #ff4d6d;
       color: white;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 0;
       z-index: 3;
     }
 
-    /* NO is NOT beside YES */
     #no {
       background: #d3d3d3;
       color: #333;
-      left: 10%;
-      top: 10%;
       z-index: 3;
     }
 
-    /* Confetti overlay */
+    /* Confetti */
     .confetti-layer {
       position: fixed;
       inset: 0;
@@ -123,7 +122,6 @@
       }
     }
 
-    /* tiny toast */
     .toast {
       position: fixed;
       left: 50%;
@@ -140,8 +138,8 @@
     }
   </style>
 </head>
-<body>
 
+<body>
   <div class="card" id="messageCard" title="Tap/click me 🎉">
     <img src="ponyo.jpg" alt="Ponyo" class="ponyo-img" />
 
@@ -156,7 +154,7 @@
 
     <h2>Will you be my Valentine? 💘</h2>
 
-    <div class="buttons">
+    <div class="buttons" id="btnContainer">
       <button id="yes">YES 💕</button>
       <button id="no">NO 😅</button>
     </div>
@@ -165,41 +163,11 @@
   <script>
     const noBtn = document.getElementById("no");
     const yesBtn = document.getElementById("yes");
-    const container = document.querySelector(".buttons");
+    const container = document.getElementById("btnContainer");
     const messageCard = document.getElementById("messageCard");
 
-    function clamp(n, min, max) {
-      return Math.max(min, Math.min(max, n));
-    }
-
-    function moveNoButton() {
-      const maxX = container.clientWidth - noBtn.offsetWidth;
-      const maxY = container.clientHeight - noBtn.offsetHeight;
-
-      // random position inside the container
-      const x = Math.random() * maxX;
-      const y = Math.random() * maxY;
-
-      noBtn.style.left = x + "px";
-      noBtn.style.top = y + "px";
-    }
-
-    // Make NO run away when she tries to click it (or hover/touch)
-    ["pointerdown", "mouseover", "touchstart"].forEach(evt => {
-      noBtn.addEventListener(evt, (e) => {
-        e.preventDefault();
-        moveNoButton();
-      }, { passive: false });
-    });
-
-    // Optional: also move if focus happens (keyboard)
-    noBtn.addEventListener("focus", moveNoButton);
-
     // Confetti party blast
-    function partyBlast({
-      pieces = 80,
-      durationMs = 1600
-    } = {}) {
+    function partyBlast({ pieces = 90, durationMs = 1600 } = {}) {
       const layer = document.createElement("div");
       layer.className = "confetti-layer";
       document.body.appendChild(layer);
@@ -212,11 +180,9 @@
         el.className = "confetti";
 
         const left = Math.random() * 100;
-        const size = 6 + Math.random() * 10;
         const fallTime = 900 + Math.random() * 900;
 
-        // 25% emoji confetti
-        const useEmoji = Math.random() < 0.25;
+        const useEmoji = Math.random() < 0.28;
         if (useEmoji) {
           el.style.width = "auto";
           el.style.height = "auto";
@@ -225,6 +191,7 @@
           el.style.background = "transparent";
         } else {
           el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          const size = 6 + Math.random() * 10;
           el.style.width = size + "px";
           el.style.height = (size + 4) + "px";
         }
@@ -236,7 +203,6 @@
         layer.appendChild(el);
       }
 
-      // remove after duration
       setTimeout(() => layer.remove(), durationMs);
     }
 
@@ -248,12 +214,41 @@
       setTimeout(() => t.remove(), 1400);
     }
 
-    // Clicking the message card triggers party blast
+    // Clicking the message/card triggers party blast
     messageCard.addEventListener("click", () => {
-      partyBlast({ pieces: 90 });
+      partyBlast({ pieces: 100 });
       showToast("🎉 You tapped the message! 💖");
     });
 
+    // NO button runs away
+    function moveNoButton() {
+      const maxX = container.clientWidth - noBtn.offsetWidth;
+      const maxY = container.clientHeight - noBtn.offsetHeight;
+
+      // Switch to absolute ONLY when it escapes
+      noBtn.style.position = "absolute";
+      noBtn.style.left = Math.random() * maxX + "px";
+      noBtn.style.top = Math.random() * maxY + "px";
+    }
+
+    // Reset NO back to the line when page loads
+    function resetNoButtonInline() {
+      noBtn.style.position = "relative";
+      noBtn.style.left = "";
+      noBtn.style.top = "";
+    }
+
+    window.addEventListener("load", resetNoButtonInline);
+
+    // Run away when she tries
+    ["pointerdown", "mouseover", "touchstart"].forEach(evt => {
+      noBtn.addEventListener(evt, (e) => {
+        e.preventDefault();
+        moveNoButton();
+      }, { passive: false });
+    });
+
+    // YES click: show final message + confetti
     yesBtn.onclick = () => {
       document.body.innerHTML = `
         <div style="
@@ -292,14 +287,23 @@
             </p>
 
             <p style="opacity:.8; margin-top:18px; font-size:14px;">
-              (Tap anywhere for one more 🎉)
+              (Tap anywhere for 🎉)
             </p>
           </div>
         </div>
       `;
 
-      // blast once on load
-      (function partyBlastFinal(){
+      // Add keyframes again (since body replaced)
+      const style = document.createElement("style");
+      style.textContent = `
+        @keyframes fall {
+          to { transform: translateY(110vh) rotate(720deg); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Blast on load
+      (function blastNow(){
         const layer = document.createElement("div");
         layer.style.position = "fixed";
         layer.style.inset = "0";
@@ -308,56 +312,9 @@
         layer.style.zIndex = "9999";
         document.body.appendChild(layer);
 
-        const emojis = ["🎉", "✨", "💖", "🎊", "💘"];
         const colors = ["#ff4d6d", "#ffd166", "#06d6a0", "#4dabf7", "#b197fc", "#f783ac"];
 
-        for (let i = 0; i < 110; i++) {
-          const el = document.createElement("div");
-          el.style.position = "absolute";
-          el.style.top = "-10px";
-          el.style.left = (Math.random() * 100) + "vw";
-          el.style.opacity = "0.95";
-          el.style.borderRadius = "2px";
-
-          const fallTime = 900 + Math.random() * 900;
-          el.style.animation = `fall ${fallTime}ms linear forwards`;
-
-          const useEmoji = Math.random() < 0.28;
-          if (useEmoji) {
-            el.style.background = "transparent";
-            el.style.fontSize = (12 + Math.random() * 18) + "px";
-            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-          } else {
-            const size = 6 + Math.random() * 10;
-            el.style.width = size + "px";
-            el.style.height = (size + 4) + "px";
-            el.style.background = colors[Math.floor(Math.random() * colors.length)];
-          }
-
-          layer.appendChild(el);
-        }
-
-        setTimeout(() => layer.remove(), 1700);
-      })();
-
-      // tap anywhere for another blast
-      document.body.addEventListener("click", () => {
-        // quick lightweight burst
-        const evt = new Event("extraBlast");
-        document.dispatchEvent(evt);
-      });
-
-      document.addEventListener("extraBlast", () => {
-        // tiny burst (no heavy loops)
-        const layer = document.createElement("div");
-        layer.style.position = "fixed";
-        layer.style.inset = "0";
-        layer.style.pointerEvents = "none";
-        layer.style.overflow = "hidden";
-        layer.style.zIndex = "9999";
-        document.body.appendChild(layer);
-
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 120; i++) {
           const el = document.createElement("div");
           el.style.position = "absolute";
           el.style.top = "-10px";
@@ -365,28 +322,42 @@
           el.style.width = (6 + Math.random() * 10) + "px";
           el.style.height = (10 + Math.random() * 12) + "px";
           el.style.borderRadius = "2px";
-          el.style.background = ["#ff4d6d","#ffd166","#06d6a0","#4dabf7","#b197fc","#f783ac"][Math.floor(Math.random()*6)];
-          el.style.animation = `fall ${900 + Math.random()*900}ms linear forwards`;
+          el.style.opacity = "0.95";
+          el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          el.style.animation = `fall ${900 + Math.random() * 900}ms linear forwards`;
+          layer.appendChild(el);
+        }
+        setTimeout(() => layer.remove(), 1700);
+      })();
+
+      // Tap anywhere for another blast
+      document.body.addEventListener("click", () => {
+        const layer = document.createElement("div");
+        layer.style.position = "fixed";
+        layer.style.inset = "0";
+        layer.style.pointerEvents = "none";
+        layer.style.overflow = "hidden";
+        layer.style.zIndex = "9999";
+        document.body.appendChild(layer);
+
+        const colors = ["#ff4d6d", "#ffd166", "#06d6a0", "#4dabf7", "#b197fc", "#f783ac"];
+
+        for (let i = 0; i < 70; i++) {
+          const el = document.createElement("div");
+          el.style.position = "absolute";
+          el.style.top = "-10px";
+          el.style.left = (Math.random() * 100) + "vw";
+          el.style.width = (6 + Math.random() * 10) + "px";
+          el.style.height = (10 + Math.random() * 12) + "px";
+          el.style.borderRadius = "2px";
+          el.style.opacity = "0.95";
+          el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          el.style.animation = `fall ${900 + Math.random() * 900}ms linear forwards`;
           layer.appendChild(el);
         }
         setTimeout(() => layer.remove(), 1500);
       });
     };
-
-    // Place NO away from YES on load (so it's not near it)
-    // Keep it roughly top-left-ish but not fixed
-    function placeNoAwayFromYes() {
-      // put NO somewhere in upper area (away from YES at bottom center)
-      const maxX = container.clientWidth - noBtn.offsetWidth;
-      const maxY = container.clientHeight - noBtn.offsetHeight;
-      const x = Math.random() * (maxX * 0.5); // left half
-      const y = Math.random() * (maxY * 0.5); // top half
-      noBtn.style.left = clamp(x, 0, maxX) + "px";
-      noBtn.style.top = clamp(y, 0, maxY) + "px";
-    }
-    window.addEventListener("load", placeNoAwayFromYes);
-    window.addEventListener("resize", placeNoAwayFromYes);
   </script>
-
 </body>
 </html>
